@@ -1,11 +1,24 @@
+import firebase_admin
 import socket
 import time
 import requests
 import threading
+from firebase_admin import credentials
+from firebase_admin import firestore
+from datetime import datetime
 
+cred = credentials.Certificate("caminho/para/certificado.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
 token = 'bot1971405735:AAFNwbmSxHAESBNn4jHDGpEa9YtyP5LXKJY'
 
-def send_message(message):
+
+def save_and_send_message(message, user):
+    doc_ref = db.collection(u'quedas').document()
+    doc_ref.set({
+        'usuario': user,
+        'timestamp': datetime.now()
+    })
     requests.get('https://api.telegram.org/' + token + '/sendMessage', {'chat_id': 849757625, 'text': message})
 
 if __name__ == "__main__":
@@ -26,10 +39,8 @@ if __name__ == "__main__":
                 if(not falling):
                     start = time.time()
                     falling = True
-                elif(time.time() - start > 0.4 and abs(z) > 9 and abs(x) < 2 and abs(y) < 2):
-                    print(s_factor)
+                elif(time.time() - start > 0.6 and abs(z) > 15 or abs(x) > 15 or abs(y) > 15):
+                    threading.Thread(target=save_and_send_message, args=(message,address[0]), daemon=True).start()
+                    falling = False
             else:
                 falling = False
-            #if time.time() - start > 2:
-            #    start = time.time()
-            #    threading.Thread(target=send_message, args=(message,), daemon=True).start()
