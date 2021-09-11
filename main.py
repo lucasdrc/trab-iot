@@ -3,14 +3,17 @@ import socket
 import time
 import requests
 import threading
+import os
 from firebase_admin import credentials
 from firebase_admin import firestore
 from datetime import datetime
+from dotenv import load_dotenv
 
-cred = credentials.Certificate("caminho/para/certificado.json")
+load_dotenv()
+
+cred = credentials.Certificate(os.getenv("FIREBASE_CERT_PATH"))
 firebase_admin.initialize_app(cred)
 db = firestore.client()
-token = 'bot1971405735:AAFNwbmSxHAESBNn4jHDGpEa9YtyP5LXKJY'
 
 
 def save_and_send_message(message, user):
@@ -19,9 +22,10 @@ def save_and_send_message(message, user):
         'usuario': user,
         'timestamp': datetime.now()
     })
-    requests.get('https://api.telegram.org/' + token + '/sendMessage', {'chat_id': 849757625, 'text': message})
+    requests.get('https://api.telegram.org/' + os.getenv("BOT_TOKEN") + '/sendMessage', {'chat_id': os.getenv("TELEGRAM_USER_ID"), 'text': message})
 
 if __name__ == "__main__":
+    save_and_send_message("test","test")
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as so:
         HOST = ''
         PORT = 5555
