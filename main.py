@@ -17,34 +17,41 @@ db = firestore.client()
 
 
 def save_and_send_message(message, user):
-    doc_ref = db.collection(u'quedas').document()
-    doc_ref.set({
-        'usuario': user,
-        'timestamp': datetime.now()
-    })
-    requests.get('https://api.telegram.org/' + os.getenv("BOT_TOKEN") + '/sendMessage', {'chat_id': os.getenv("TELEGRAM_USER_ID"), 'text': message})
+    print("There has been a fall")
+    doc_ref = db.collection("quedas").document()
+    doc_ref.set({"usuario": user, "timestamp": datetime.now()})
+    requests.get(
+        f"https://api.telegram.org/{os.getenv('BOT_TOKEN')}/sendMessage",
+        {"chat_id": os.getenv("TELEGRAM_USER_ID"), "text": message},
+    )
+    return
+
+
+def clean_and_cast_to_float(s):
+    return float(s.strip().replace("'", ""))
+
 
 if __name__ == "__main__":
-    save_and_send_message("test","test")
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as so:
-        HOST = ''
+        HOST = ""
         PORT = 5555
         so.bind((HOST, PORT))
         start = time.time()
         falling = False
         while True:
             message, address = so.recvfrom(8192)
-            x,y,z = str(message).split(',')[2:]
-            x = float(x.strip())
-            y = float(y.strip())
-            z = float(z.strip()[:-1])
-            s_factor = (x**2 + y**2 + z**2)**(1/2)
-            if abs(s_factor) > 10 or abs(s_factor) < 9:
-                if(not falling):
+            accX, accY, accZ = map(clean_and_cast_to_float, str(message).split(",")[2:5])
+            s_factor = (accX ** 2 + accY ** 2 + accZ ** 2) ** 0.5
+            if not 9 < abs(s_factor) < 10:
+                if not falling:
                     start = time.time()
                     falling = True
-                elif(time.time() - start > 0.6 and abs(z) > 15 or abs(x) > 15 or abs(y) > 15):
-                    threading.Thread(target=save_and_send_message, args=(message,address[0]), daemon=True).start()
+                elif time.time() - start > 0.6 and any(val > 15 for val in [accX, accY, accZ]):
+                    threading.Thread(
+                        target=save_and_send_message,
+                        args=(message, address[0]),
+                        daemon=True,
+                    ).start()
                     falling = False
             else:
                 falling = False
