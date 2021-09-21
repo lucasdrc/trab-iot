@@ -24,7 +24,7 @@ def main(event, _):
 
     body = {
         "message": "Fall event successfully registered",
-        "input": { message: message, user: user }
+        "input": { "message": message, "user": user }
     }
 
     response = {
