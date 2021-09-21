@@ -1,29 +1,13 @@
-import firebase_admin
 import socket
 import time
 import requests
 import threading
-import os
-from firebase_admin import credentials
-from firebase_admin import firestore
-from datetime import datetime
-from dotenv import load_dotenv
-
-load_dotenv()
-
-cred = credentials.Certificate(os.getenv("FIREBASE_CERT_PATH"))
-firebase_admin.initialize_app(cred)
-db = firestore.client()
-
+from vars import TELEGRAM_USER_ID
 
 def save_and_send_message(message, user):
-    print("There has been a fall")
-    doc_ref = db.collection("quedas").document()
-    doc_ref.set({"usuario": user, "timestamp": datetime.now()})
-    requests.get(
-        f"https://api.telegram.org/{os.getenv('BOT_TOKEN')}/sendMessage",
-        {"chat_id": os.getenv("TELEGRAM_USER_ID"), "text": message},
-    )
+    print("There has been a fall; waiting for message saving and sending API response...")
+    r = requests.post(url = " https://k6yz5w2j2l.execute-api.us-east-1.amazonaws.com/dev/", json = {"message": str(message), "user": str(user), "chat_id": TELEGRAM_USER_ID})
+    print(r.text)
     return
 
 

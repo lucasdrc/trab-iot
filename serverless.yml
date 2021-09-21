@@ -1,0 +1,23 @@
+service: trabalho-iot
+
+frameworkVersion: "1"
+
+provider:
+  name: aws
+  runtime: python3.6
+
+custom:
+  pythonRequirements:
+    dockerizePip: false
+
+functions:
+  send_fall_message:
+    memorySize: 128
+    handler: send_fall_message.main
+    events:
+      - http:
+          path: /
+          method: post
+
+plugins:
+  - serverless-python-requirements
