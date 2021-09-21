@@ -19,7 +19,7 @@ def main(event, _):
     doc_ref.set({"usuario": user, "timestamp": datetime.now()})
     requests.get(
         f"https://api.telegram.org/{BOT_TOKEN}/sendMessage",
-        {"chat_id": chat_id, "text": message},
+        {"chat_id": chat_id, "text": f"Attention: user {user} may have fallen down"},
     )
 
     body = {
